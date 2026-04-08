@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iyzico Sandbox Test Paneli</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #222;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 { font-size: 20px; font-weight: 600; }
+    header span { font-size: 12px; background: #00b09b; padding: 3px 10px; border-radius: 20px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr 340px;
+      height: calc(100vh - 58px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: #16213e;
+      padding: 20px 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      padding: 8px 20px 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6b7a99;
+      margin-top: 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #a0aec0;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .nav-item:hover { background: #1a2a4a; color: #fff; }
+    .nav-item.active { background: #1a2a4a; color: #00b09b; border-left-color: #00b09b; }
+
+    .method-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .POST { background: #22543d; color: #68d391; }
+    .GET  { background: #2a4365; color: #90cdf4; }
+    .PUT  { background: #744210; color: #f6ad55; }
+    .DELETE { background: #742a2a; color: #fc8181; }
+
+    /* Main */
+    .main {
+      padding: 28px;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .panel-desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .url-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .url-bar .method-badge { font-size: 11px; padding: 4px 10px; }
+    .url-bar .url { color: #444; font-family: monospace; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    input, select, textarea {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: #00b09b; }
+
+    textarea { resize: vertical; min-height: 80px; font-family: monospace; }
+
+    .section-label {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #00b09b;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-top: 6px;
+    }
+
+    .btn-send {
+      margin-top: 20px;
+      background: #00b09b;
+      color: #fff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-send:hover { background: #009688; }
+    .btn-send:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* Response Panel */
+    .response-panel {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #2d3748;
+    }
+
+    .response-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid #2d3748;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .response-header span { color: #a0aec0; font-size: 13px; font-weight: 600; }
+
+    .status-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .status-success { background: #22543d; color: #68d391; }
+    .status-failure { background: #742a2a; color: #fc8181; }
+    .status-pending { background: #2d3748; color: #a0aec0; }
+
+    .response-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #a0aec0;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .response-body .key   { color: #90cdf4; }
+    .response-body .str   { color: #68d391; }
+    .response-body .num   { color: #f6ad55; }
+    .response-body .bool  { color: #fc8181; }
+    .response-body .null  { color: #9b9b9b; }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid #444;
+      border-top-color: #00b09b;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .placeholder-text {
+      color: #4a5568;
+      text-align: center;
+      margin-top: 60px;
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #999;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>iyzico Sandbox Test Paneli</h1>
+  <span>SANDBOX</span>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Üyelik</div>
+    <div class="nav-item active" onclick="show('membership-product')">
+      <span class="method-badge POST">POST</span> Ürün Oluştur
+    </div>
+    <div class="nav-item" onclick="show('membership-plan')">
+      <span class="method-badge POST">POST</span> Plan Oluştur
+    </div>
+    <div class="nav-item" onclick="show('membership-customer')">
+      <span class="method-badge POST">POST</span> Müşteri Oluştur
+    </div>
+    <div class="nav-item" onclick="show('membership-subscribe')">
+      <span class="method-badge POST">POST</span> Abonelik Başlat
+    </div>
+    <div class="nav-item" onclick="show('membership-get')">
+      <span class="method-badge GET">GET</span> Abonelik Sorgula
+    </div>
+    <div class="nav-item" onclick="show('membership-cancel')">
+      <span class="method-badge DELETE">DEL</span> Abonelik İptal
+    </div>
+
+    <div class="sidebar-section">Pazaryeri</div>
+    <div class="nav-item" onclick="show('market-merchant-create')">
+      <span class="method-badge POST">POST</span> Alt Satıcı Ekle
+    </div>
+    <div class="nav-item" onclick="show('market-merchant-update')">
+      <span class="method-badge PUT">PUT</span> Alt Satıcı Güncelle
+    </div>
+    <div class="nav-item" onclick="show('market-merchant-get')">
+      <span class="method-badge GET">GET</span> Alt Satıcı Sorgula
+    </div>
+    <div class="nav-item" onclick="show('market-payment')">
+      <span class="method-badge POST">POST</span> Ödeme Oluştur
+    </div>
+    <div class="nav-item" onclick="show('market-3d-init')">
+      <span class="method-badge POST">POST</span> 3D Secure Başlat
+    </div>
+    <div class="nav-item" onclick="show('market-3d-complete')">
+      <span class="method-badge POST">POST</span> 3D Secure Tamamla
+    </div>
+    <div class="nav-item" onclick="show('market-refund')">
+      <span class="method-badge POST">POST</span> İade Et
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main" id="main-content">
+    <!-- panels injected by JS -->
+  </main>
+
+  <!-- Response -->
+  <aside class="response-panel">
+    <div class="response-header">
+      <span>Yanıt</span>
+      <span class="status-badge status-pending" id="status-badge">—</span>
+    </div>
+    <div class="response-body" id="response-body">
+      <div class="placeholder-text">
+        Bir endpoint seçin ve<br>formu doldurup gönderin.
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+const BASE = 'http://localhost:65430';
+
+const panels = {
+  'membership-product': {
+    title: 'Subscription Ürünü Oluştur',
+    desc: 'Üyelik sistemi için bir ürün (product) tanımlar. Planlar bu ürüne bağlanır.',
+    method: 'POST',
+    url: '/api/membership/product',
+    fields: [
+      { key: 'name', label: 'Ürün Adı', placeholder: 'Premium Üyelik', default: 'Premium Üyelik' },
+      { key: 'description', label: 'Açıklama', placeholder: 'Aylık premium üyelik paketi', default: 'Aylık premium üyelik paketi' },
+    ],
+    build: (f) => f,
+  },
+
+  'membership-plan': {
+    title: 'Plan Oluştur',
+    desc: 'Ürüne bağlı fiyatlandırma planı oluşturur (aylık, yıllık vb.).',
+    method: 'POST',
+    url: '/api/membership/plan',
+    fields: [
+      { key: 'name', label: 'Plan Adı', placeholder: 'Aylık Plan', default: 'Aylık Plan' },
+      { key: 'productReferenceCode', label: 'Ürün Referans Kodu', placeholder: 'product-xxx', default: '' },
+      { key: 'price', label: 'Fiyat', placeholder: '49.99', default: '49.99' },
+      { key: 'currencyCode', label: 'Para Birimi', type: 'select', options: ['TRY','USD','EUR'], default: 'TRY' },
+      { key: 'paymentInterval', label: 'Periyot', type: 'select', options: ['WEEKLY','MONTHLY','YEARLY'], default: 'MONTHLY' },
+      { key: 'paymentIntervalCount', label: 'Periyot Sayısı', placeholder: '1', default: '1' },
+      { key: 'trialPeriodDays', label: 'Deneme Süresi (gün)', placeholder: '7', default: '7' },
+    ],
+    build: (f) => ({ ...f, paymentIntervalCount: Number(f.paymentIntervalCount), trialPeriodDays: Number(f.trialPeriodDays) }),
+  },
+
+  'membership-customer': {
+    title: 'Müşteri Oluştur',
+    desc: 'Abonelik sistemine yeni müşteri ekler.',
+    method: 'POST',
+    url: '/api/membership/customer',
+    fields: [
+      { key: 'name', label: 'Ad', placeholder: 'Ahmet', default: 'Ahmet' },
+      { key: 'surname', label: 'Soyad', placeholder: 'Yılmaz', default: 'Yılmaz' },
+      { key: 'email', label: 'E-posta', placeholder: 'ahmet@test.com', default: 'ahmet@test.com' },
+      { key: 'identityNumber', label: 'TC Kimlik No', placeholder: '74300864791', default: '74300864791' },
+      { key: 'gsmNumber', label: 'GSM', placeholder: '+905350000000', default: '+905350000000' },
+    ],
+    build: (f) => f,
+  },
+
+  'membership-subscribe': {
+    title: 'Abonelik Başlat',
+    desc: 'Müşteri ve kart bilgisiyle abonelik oluşturur.',
+    method: 'POST',
+    url: '/api/membership/subscribe',
+    fields: [
+      { key: 'planReferenceCode', label: 'Plan Referans Kodu', placeholder: 'plan-xxx', default: '' },
+      { section: 'Müşteri Bilgileri' },
+      { key: 'customer.name', label: 'Ad', placeholder: 'Ahmet', default: 'Ahmet' },
+      { key: 'customer.surname', label: 'Soyad', placeholder: 'Yılmaz', default: 'Yılmaz' },
+      { key: 'customer.email', label: 'E-posta', placeholder: 'ahmet@test.com', default: 'ahmet@test.com' },
+      { key: 'customer.gsmNumber', label: 'GSM', placeholder: '+905350000000', default: '+905350000000' },
+      { key: 'customer.address', label: 'Adres', placeholder: 'Test Mah. Test Sk. No:1', default: 'Test Mah. Test Sk. No:1' },
+      { key: 'customer.city', label: 'Şehir', placeholder: 'Istanbul', default: 'Istanbul' },
+      { section: 'Kart Bilgileri' },
+      { key: 'card.holderName', label: 'Kart Sahibi', placeholder: 'Ahmet Yılmaz', default: 'Ahmet Yılmaz', hint: 'Sandbox test kartı' },
+      { key: 'card.number', label: 'Kart Numarası', placeholder: '5528790000000008', default: '5528790000000008' },
+      { key: 'card.expireMonth', label: 'Son Ay', placeholder: '12', default: '12' },
+      { key: 'card.expireYear', label: 'Son Yıl', placeholder: '2030', default: '2030' },
+      { key: 'card.cvc', label: 'CVC', placeholder: '123', default: '123' },
+    ],
+    build: (f) => buildNested(f),
+  },
+
+  'membership-get': {
+    title: 'Abonelik Sorgula',
+    desc: 'Referans koduyla abonelik bilgilerini getirir.',
+    method: 'GET',
+    url: '/api/membership/:referenceCode',
+    fields: [
+      { key: 'referenceCode', label: 'Referans Kodu', placeholder: 'subscription-xxx', default: '' },
+    ],
+    build: (f) => f,
+    urlBuilder: (f) => `/api/membership/${f.referenceCode}`,
+  },
+
+  'membership-cancel': {
+    title: 'Abonelik İptal',
+    desc: 'Aktif aboneliği iptal eder.',
+    method: 'DELETE',
+    url: '/api/membership/:referenceCode',
+    fields: [
+      { key: 'referenceCode', label: 'Referans Kodu', placeholder: 'subscription-xxx', default: '' },
+    ],
+    build: (f) => f,
+    urlBuilder: (f) => `/api/membership/${f.referenceCode}`,
+  },
+
+  'market-merchant-create': {
+    title: 'Alt Satıcı Oluştur',
+    desc: 'Pazaryeri sistemine yeni bir satıcı (sub-merchant) ekler.',
+    method: 'POST',
+    url: '/api/marketplace/merchant',
+    fields: [
+      { key: 'name', label: 'Mağaza Adı', placeholder: 'Test Mağaza', default: 'Test Mağaza' },
+      { key: 'email', label: 'E-posta', placeholder: 'magaza@test.com', default: 'magaza@test.com' },
+      { key: 'gsmNumber', label: 'GSM', placeholder: '+905350000000', default: '+905350000000' },
+      { key: 'subMerchantType', label: 'Satıcı Tipi', type: 'select', options: ['PERSONAL','PRIVATE_COMPANY','LIMITED_OR_JOINT_STOCK_COMPANY'], default: 'PERSONAL' },
+      { key: 'identityNumber', label: 'TC Kimlik No', placeholder: '74300864791', default: '74300864791', hint: 'PERSONAL için' },
+      { key: 'taxNumber', label: 'Vergi No', placeholder: '1234567890', default: '', hint: 'Şirket için' },
+      { key: 'legalCompanyTitle', label: 'Ticari Unvan', placeholder: 'Test Ltd. Şti.', default: '' },
+      { key: 'contactName', label: 'İletişim Adı', placeholder: 'Mehmet', default: 'Mehmet' },
+      { key: 'contactSurname', label: 'İletişim Soyadı', placeholder: 'Öztürk', default: 'Öztürk' },
+      { key: 'iban', label: 'IBAN', placeholder: 'TR180006200119000006672315', default: 'TR180006200119000006672315' },
+      { key: 'address', label: 'Adres', placeholder: 'Test Mah. No:1 İstanbul', default: 'Test Mah. No:1 İstanbul' },
+      { key: 'currency', label: 'Para Birimi', type: 'select', options: ['TRY','USD','EUR'], default: 'TRY' },
+    ],
+    build: (f) => f,
+  },
+
+  'market-merchant-update': {
+    title: 'Alt Satıcı Güncelle',
+    desc: 'Mevcut satıcının bilgilerini günceller.',
+    method: 'PUT',
+    url: '/api/marketplace/merchant',
+    fields: [
+      { key: 'subMerchantKey', label: 'Sub Merchant Key', placeholder: 'sandbox-xxx', default: '' },
+      { key: 'name', label: 'Mağaza Adı', placeholder: 'Yeni Mağaza Adı', default: '' },
+      { key: 'email', label: 'E-posta', placeholder: 'yeni@email.com', default: '' },
+      { key: 'iban', label: 'IBAN', placeholder: 'TR...', default: 'TR180006200119000006672315' },
+      { key: 'address', label: 'Adres', placeholder: 'Yeni adres', default: '' },
+    ],
+    build: (f) => f,
+  },
+
+  'market-merchant-get': {
+    title: 'Alt Satıcı Sorgula',
+    desc: 'External ID ile satıcı bilgilerini getirir.',
+    method: 'GET',
+    url: '/api/marketplace/merchant/:externalId',
+    fields: [
+      { key: 'externalId', label: 'External ID', placeholder: 'merchant-xxx', default: '' },
+    ],
+    build: (f) => f,
+    urlBuilder: (f) => `/api/marketplace/merchant/${f.externalId}`,
+  },
+
+  'market-payment': {
+    title: 'Pazaryeri Ödemesi',
+    desc: 'Alt satıcıya komisyon bölüşümlü ödeme oluşturur.',
+    method: 'POST',
+    url: '/api/marketplace/payment',
+    fields: [
+      { key: 'price', label: 'Toplam Tutar', placeholder: '100.00', default: '100.00' },
+      { key: 'paidPrice', label: 'Ödenen Tutar', placeholder: '100.00', default: '100.00' },
+      { key: 'currency', label: 'Para Birimi', type: 'select', options: ['TRY','USD','EUR'], default: 'TRY' },
+      { key: 'installment', label: 'Taksit', placeholder: '1', default: '1' },
+      { section: 'Kart Bilgileri' },
+      { key: 'card.holderName', label: 'Kart Sahibi', placeholder: 'Ahmet Yılmaz', default: 'Ahmet Yılmaz' },
+      { key: 'card.number', label: 'Kart No', placeholder: '5528790000000008', default: '5528790000000008' },
+      { key: 'card.expireMonth', label: 'Son Ay', placeholder: '12', default: '12' },
+      { key: 'card.expireYear', label: 'Son Yıl', placeholder: '2030', default: '2030' },
+      { key: 'card.cvc', label: 'CVC', placeholder: '123', default: '123' },
+      { section: 'Alıcı Bilgileri' },
+      { key: 'buyer.id', label: 'Alıcı ID', placeholder: 'buyer-001', default: 'buyer-001' },
+      { key: 'buyer.name', label: 'Ad', placeholder: 'Ahmet', default: 'Ahmet' },
+      { key: 'buyer.surname', label: 'Soyad', placeholder: 'Yılmaz', default: 'Yılmaz' },
+      { key: 'buyer.email', label: 'E-posta', placeholder: 'ahmet@test.com', default: 'ahmet@test.com' },
+      { key: 'buyer.ip', label: 'IP', placeholder: '85.34.78.112', default: '85.34.78.112' },
+      { section: 'Sepet Ürünü' },
+      { key: 'item.id', label: 'Ürün ID', placeholder: 'item-001', default: 'item-001' },
+      { key: 'item.name', label: 'Ürün Adı', placeholder: 'Test Ürün', default: 'Test Ürün' },
+      { key: 'item.price', label: 'Fiyat', placeholder: '100.00', default: '100.00' },
+      { key: 'item.subMerchantKey', label: 'Sub Merchant Key', placeholder: 'sandbox-xxx', default: '' },
+      { key: 'item.subMerchantPrice', label: 'Satıcıya Giden Tutar', placeholder: '90.00', default: '90.00', hint: 'Fark platform komisyonudur' },
+    ],
+    build: (f) => {
+      const nested = buildNested(f);
+      return {
+        price: nested.price,
+        paidPrice: nested.paidPrice,
+        currency: nested.currency,
+        installment: Number(nested.installment),
+        card: nested.card,
+        buyer: nested.buyer,
+        basketItems: [{
+          id: nested.item.id,
+          name: nested.item.name,
+          price: nested.item.price,
+          subMerchantKey: nested.item.subMerchantKey,
+          subMerchantPrice: nested.item.subMerchantPrice,
+          category: 'Genel',
+          itemType: 'PHYSICAL',
+        }],
+      };
+    },
+  },
+
+  'market-3d-init': {
+    title: '3D Secure Başlat',
+    desc: '3D Secure akışını başlatır, HTML formu döner.',
+    method: 'POST',
+    url: '/api/marketplace/payment/3d/init',
+    fields: [
+      { key: 'price', label: 'Toplam Tutar', placeholder: '100.00', default: '100.00' },
+      { key: 'paidPrice', label: 'Ödenen Tutar', placeholder: '100.00', default: '100.00' },
+      { key: 'callbackUrl', label: 'Callback URL', placeholder: 'http://localhost:65430/api/marketplace/payment/3d/complete', default: 'http://localhost:65430/api/marketplace/payment/3d/complete', full: true },
+      { section: 'Kart Bilgileri' },
+      { key: 'card.holderName', label: 'Kart Sahibi', default: 'Ahmet Yılmaz' },
+      { key: 'card.number', label: 'Kart No', default: '5528790000000008' },
+      { key: 'card.expireMonth', label: 'Son Ay', default: '12' },
+      { key: 'card.expireYear', label: 'Son Yıl', default: '2030' },
+      { key: 'card.cvc', label: 'CVC', default: '123' },
+      { section: 'Alıcı Bilgileri' },
+      { key: 'buyer.id', label: 'Alıcı ID', default: 'buyer-001' },
+      { key: 'buyer.name', label: 'Ad', default: 'Ahmet' },
+      { key: 'buyer.surname', label: 'Soyad', default: 'Yılmaz' },
+      { key: 'buyer.email', label: 'E-posta', default: 'ahmet@test.com' },
+      { key: 'buyer.ip', label: 'IP', default: '85.34.78.112' },
+      { section: 'Sepet Ürünü' },
+      { key: 'item.id', label: 'Ürün ID', default: 'item-001' },
+      { key: 'item.name', label: 'Ürün Adı', default: 'Test Ürün' },
+      { key: 'item.price', label: 'Fiyat', default: '100.00' },
+      { key: 'item.subMerchantKey', label: 'Sub Merchant Key', default: '' },
+      { key: 'item.subMerchantPrice', label: 'Satıcı Tutarı', default: '90.00' },
+    ],
+    build: (f) => {
+      const nested = buildNested(f);
+      return {
+        price: nested.price,
+        paidPrice: nested.paidPrice,
+        callbackUrl: nested.callbackUrl,
+        currency: 'TRY',
+        installment: 1,
+        card: nested.card,
+        buyer: nested.buyer,
+        basketItems: [{
+          id: nested.item.id,
+          name: nested.item.name,
+          price: nested.item.price,
+          subMerchantKey: nested.item.subMerchantKey,
+          subMerchantPrice: nested.item.subMerchantPrice,
+          category: 'Genel',
+          itemType: 'PHYSICAL',
+        }],
+      };
+    },
+  },
+
+  'market-3d-complete': {
+    title: '3D Secure Tamamla',
+    desc: 'Bankadan dönen paymentId ile ödemeyi tamamlar.',
+    method: 'POST',
+    url: '/api/marketplace/payment/3d/complete',
+    fields: [
+      { key: 'paymentId', label: 'Payment ID', placeholder: '123456', default: '' },
+      { key: 'conversationData', label: 'Conversation Data', placeholder: 'conversation data', default: '' },
+    ],
+    build: (f) => f,
+  },
+
+  'market-refund': {
+    title: 'İade Et',
+    desc: 'Belirli bir işlem için kısmi veya tam iade oluşturur.',
+    method: 'POST',
+    url: '/api/marketplace/refund',
+    fields: [
+      { key: 'paymentTransactionId', label: 'Payment Transaction ID', placeholder: '123456', default: '' },
+      { key: 'price', label: 'İade Tutarı', placeholder: '50.00', default: '' },
+      { key: 'currency', label: 'Para Birimi', type: 'select', options: ['TRY','USD','EUR'], default: 'TRY' },
+      { key: 'ip', label: 'IP', placeholder: '85.34.78.112', default: '85.34.78.112' },
+    ],
+    build: (f) => f,
+  },
+};
+
+function buildNested(flat) {
+  const out = {};
+  for (const [key, val] of Object.entries(flat)) {
+    const parts = key.split('.');
+    let cur = out;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!cur[parts[i]]) cur[parts[i]] = {};
+      cur = cur[parts[i]];
+    }
+    cur[parts[parts.length - 1]] = val;
+  }
+  return out;
+}
+
+function syntaxHighlight(json) {
+  return json
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+      let cls = 'num';
+      if (/^"/.test(match)) cls = /:$/.test(match) ? 'key' : 'str';
+      else if (/true|false/.test(match)) cls = 'bool';
+      else if (/null/.test(match)) cls = 'null';
+      return `<span class="${cls}">${match}</span>`;
+    });
+}
+
+function show(panelId) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+
+  const p = panels[panelId];
+  if (!p) return;
+
+  const methodColors = { POST: 'POST', GET: 'GET', PUT: 'PUT', DELETE: 'DELETE' };
+
+  let fieldsHtml = '';
+  p.fields.forEach(f => {
+    if (f.section) {
+      fieldsHtml += `<div class="section-label">${f.section}</div>`;
+      return;
+    }
+    const full = f.full ? 'full' : '';
+    if (f.type === 'select') {
+      const opts = f.options.map(o => `<option value="${o}" ${o === f.default ? 'selected' : ''}>${o}</option>`).join('');
+      fieldsHtml += `
+        <div class="form-group ${full}">
+          <label>${f.label}</label>
+          <select name="${f.key}">${opts}</select>
+        </div>`;
+    } else {
+      fieldsHtml += `
+        <div class="form-group ${full}">
+          <label>${f.label}</label>
+          <input type="text" name="${f.key}" placeholder="${f.placeholder || ''}" value="${f.default || ''}">
+          ${f.hint ? `<span class="hint">${f.hint}</span>` : ''}
+        </div>`;
+    }
+  });
+
+  const urlDisplay = p.url;
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="panel-title">${p.title}</div>
+    <div class="panel-desc">${p.desc}</div>
+    <div class="url-bar">
+      <span class="method-badge ${p.method}">${p.method}</span>
+      <span class="url">${BASE}${urlDisplay}</span>
+    </div>
+    <form id="api-form" onsubmit="sendRequest(event, '${panelId}')">
+      <div class="form-grid">${fieldsHtml}</div>
+      <button type="submit" class="btn-send" id="send-btn">Gönder</button>
+    </form>
+  `;
+
+  // Reset response
+  document.getElementById('response-body').innerHTML = '<div class="placeholder-text">Formu doldurun ve Gönder\'e basın.</div>';
+  document.getElementById('status-badge').textContent = '—';
+  document.getElementById('status-badge').className = 'status-badge status-pending';
+}
+
+async function sendRequest(e, panelId) {
+  e.preventDefault();
+  const p = panels[panelId];
+  const form = document.getElementById('api-form');
+  const btn = document.getElementById('send-btn');
+  const responseEl = document.getElementById('response-body');
+  const statusEl = document.getElementById('status-badge');
+
+  // Collect form values
+  const raw = {};
+  form.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.name) raw[el.name] = el.value;
+  });
+
+  const body = p.build(raw);
+  const url = p.urlBuilder ? BASE + p.urlBuilder(raw) : BASE + p.url;
+  const method = p.method;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Gönderiliyor...';
+  statusEl.textContent = '...';
+  statusEl.className = 'status-badge status-pending';
+  responseEl.innerHTML = '<div class="placeholder-text"><span class="spinner"></span><br>İstek gönderiliyor...</div>';
+
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (method !== 'GET' && method !== 'DELETE') opts.body = JSON.stringify(body);
+
+    const res = await fetch(url, opts);
+    const data = await res.json();
+
+    const isSuccess = data.status === 'success';
+    statusEl.textContent = data.status || res.status;
+    statusEl.className = `status-badge ${isSuccess ? 'status-success' : 'status-failure'}`;
+
+    const pretty = JSON.stringify(data, null, 2);
+    responseEl.innerHTML = syntaxHighlight(pretty);
+  } catch (err) {
+    statusEl.textContent = 'HATA';
+    statusEl.className = 'status-badge status-failure';
+    responseEl.innerHTML = `<span class="bool">Bağlantı hatası:\n${err.message}\n\nSunucunun çalıştığından emin olun:\nnpm start</span>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Gönder';
+}
+
+// Init
+show('membership-product');
+</script>
+</body>
+</html>
