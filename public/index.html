@@ -295,6 +295,12 @@
     <div class="nav-item" onclick="show('market-3d-complete')">
       <span class="method-badge POST">POST</span> 3D Secure Tamamla
     </div>
+    <div class="nav-item" onclick="show('market-approve')">
+      <span class="method-badge POST">POST</span> Ödeme Onayla
+    </div>
+    <div class="nav-item" onclick="show('market-disapprove')">
+      <span class="method-badge POST">POST</span> Ödeme Reddet
+    </div>
     <div class="nav-item" onclick="show('market-refund')">
       <span class="method-badge POST">POST</span> İade Et
     </div>
@@ -575,6 +581,30 @@ const panels = {
     fields: [
       { key: 'paymentId', label: 'Payment ID', placeholder: '123456', default: '' },
       { key: 'conversationData', label: 'Conversation Data', placeholder: 'conversation data', default: '' },
+    ],
+    build: (f) => f,
+  },
+
+  'market-approve': {
+    title: 'Üye İş Yeri Ödeme Onayı',
+    desc: 'Pazaryeri ödemesini onaylar ve satıcıya para serbest bırakılır. Her sepet kalemi (subMerchant) için ayrı paymentTransactionId ile çağrılır.',
+    method: 'POST',
+    url: '/api/marketplace/approve',
+    fields: [
+      { key: 'paymentTransactionId', label: 'Payment Transaction ID', placeholder: 'iyzico transaction id', default: '', hint: 'Ödeme yanıtındaki itemTransactions[].paymentTransactionId değeri' },
+      { key: 'conversationId', label: 'Conversation ID (opsiyonel)', placeholder: 'conv-123', default: '' },
+    ],
+    build: (f) => f,
+  },
+
+  'market-disapprove': {
+    title: 'Üye İş Yeri Ödeme Reddi',
+    desc: 'Pazaryeri ödemesini reddeder, satıcıya para gönderilmez. Onayın tersi işlemdir.',
+    method: 'POST',
+    url: '/api/marketplace/disapprove',
+    fields: [
+      { key: 'paymentTransactionId', label: 'Payment Transaction ID', placeholder: 'iyzico transaction id', default: '', hint: 'Reddedilecek işlemin transaction ID değeri' },
+      { key: 'conversationId', label: 'Conversation ID (opsiyonel)', placeholder: 'conv-123', default: '' },
     ],
     build: (f) => f,
   },

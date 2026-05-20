@@ -62,6 +62,26 @@ router.post('/payment/3d/complete', async (req, res) => {
   }
 });
 
+// POST /api/marketplace/approve - Üye iş yeri ödeme onayı
+router.post('/approve', async (req, res) => {
+  try {
+    const result = await marketplace.approvePayment(req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/marketplace/disapprove - Üye iş yeri ödeme reddi
+router.post('/disapprove', async (req, res) => {
+  try {
+    const result = await marketplace.disapprovePayment(req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/marketplace/refund - İade et
 router.post('/refund', async (req, res) => {
   try {

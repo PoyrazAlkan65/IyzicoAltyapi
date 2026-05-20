@@ -243,6 +243,42 @@ function complete3DPayment(params) {
   });
 }
 
+// Üye iş yeri ödeme onayı (onay → satıcıya para serbest bırakılır)
+// POST /payment/iyzipos/item/approve
+function approvePayment(params) {
+  return new Promise((resolve, reject) => {
+    iyzipay.approval.create(
+      {
+        locale: params.locale || 'tr',
+        conversationId: params.conversationId || `conv-${Date.now()}`,
+        paymentTransactionId: params.paymentTransactionId,
+      },
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    );
+  });
+}
+
+// Üye iş yeri ödeme onayı reddi (disapprove → satıcıya para gönderilmez)
+// POST /payment/iyzipos/item/disapprove
+function disapprovePayment(params) {
+  return new Promise((resolve, reject) => {
+    iyzipay.disapproval.create(
+      {
+        locale: params.locale || 'tr',
+        conversationId: params.conversationId || `conv-${Date.now()}`,
+        paymentTransactionId: params.paymentTransactionId,
+      },
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    );
+  });
+}
+
 // Ödemeyi iade et
 function refundPayment(params) {
   return new Promise((resolve, reject) => {
@@ -270,5 +306,7 @@ module.exports = {
   createPayment,
   initiate3DPayment,
   complete3DPayment,
+  approvePayment,
+  disapprovePayment,
   refundPayment,
 };

@@ -344,6 +344,37 @@ Bankadan geri dönen bilgilerle ödemeyi tamamlar.
 
 ---
 
+#### `POST /api/marketplace/approve`
+Üye iş yeri ödeme onayı. Pazaryeri ödemelerinde satıcıya paranın aktarılabilmesi için her sepet kaleminin onaylanması gerekir. [iyzico dokümantasyonu →](https://docs.iyzico.com/urunler/pazaryeri/pazaryeri-entegrasyonu/onay)
+
+```json
+{
+  "paymentTransactionId": "iyzico-transaction-id",
+  "conversationId": "opsiyonel-conv-id"
+}
+```
+
+**Akış:**
+1. Pazaryeri ödemesi alınır (`POST /api/marketplace/payment`)
+2. Yanıttaki her `itemTransactions[].paymentTransactionId` saklanır
+3. Ürün teslim edildikten / hizmet tamamlandıktan sonra her bir transaction için `approve` çağrılır
+4. Onay sonrası blokaj süresi dolunca para satıcıya aktarılır
+
+> Onay yapılmazsa para iyzico havuzunda bekler ve satıcıya geçmez.
+
+---
+
+#### `POST /api/marketplace/disapprove`
+Üye iş yeri ödeme onay reddi. Satıcıya para gönderilmesini engeller (örn. ürün iptal/uyuşmazlık).
+
+```json
+{
+  "paymentTransactionId": "iyzico-transaction-id"
+}
+```
+
+---
+
 #### `POST /api/marketplace/refund`
 İşlem bazlı kısmi veya tam iade oluşturur.
 
